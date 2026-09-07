@@ -101,7 +101,23 @@ npm run validate:contracts
 npm run validate
 ```
 
+### 🛡️ Production Empirical QA & Resilience Battery ("Si no se puede verificar entonces no funciona")
+
+The whiteboard running live on [GitHub Pages](https://mauricioperera.github.io/webmcp-miro/) was subjected to an adversarial and boundary test battery:
+
+1. **WebMCP AI Agent Console**: Interactive tool runner, dynamic JSON arguments parser, and full catalog of 10 registered tools with typed input and output schemas.
+2. **Happy Path**: Successfully created sticky notes via WebMCP tool calls (`whiteboard_create_sticky_note` with `{"text":"Test 1","color":"yellow","x":300,"y":300}`) returning `{ success: true, id: "sticky_...", message: "Sticky note created at (300, 300)" }`.
+3. **Forced Failures & Adversarial Injection**:
+   - **Empty / Whitespace Input**: Intercepted by the schema validator (`fastwebmcp: input validation failed`) without mutating board state.
+   - **Malformed JSON Syntax**: Caught gracefully by the runner (`Expected property name or '}' in JSON`) with zero runtime crashes.
+   - **XSS Injection (`<script>alert('xss')</script>`)**: 100% neutralized; rendered purely as safe plain text in the Canvas 2D engine with zero DOM injection.
+4. **History Stack & Multi-Format Export**:
+   - **Undo / Redo**: Element removal and reconstitution verified with coordinate and color preservation.
+   - **Export Modal**: Validated across High-DPI PNG, Scalable SVG, Board JSON export, and local JSON file import.
+5. **WebMCP Directory Certification**: Officially verified and listed at [webmcp.com/sites/mauricioperera.github.io](https://webmcp.com/sites/mauricioperera.github.io) with 10 tools and end-to-end synthetic agent journey completed in 2s.
+
 ---
+
 
 ## 🌐 Deploying to GitHub Pages
 

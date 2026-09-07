@@ -29,6 +29,15 @@ export function registerBoardWebMcpTools(store) {
       },
       required: ['text']
     },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether the sticky note was created' },
+        id: { type: 'string', description: 'The unique ID assigned to the new sticky note' },
+        message: { type: 'string', description: 'Confirmation message' }
+      },
+      required: ['success', 'id']
+    },
     execute: async (input) => {
       let resolvedColor = input.color;
       if (resolvedColor && PASTEL_COLORS[resolvedColor.toLowerCase()]) {
@@ -70,6 +79,15 @@ export function registerBoardWebMcpTools(store) {
       },
       required: ['shapeType']
     },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether the shape was created' },
+        id: { type: 'string', description: 'The unique ID assigned to the new shape' },
+        message: { type: 'string', description: 'Confirmation message' }
+      },
+      required: ['success', 'id']
+    },
     execute: async (input) => {
       const elem = store.addElement({
         type: 'shape',
@@ -100,6 +118,15 @@ export function registerBoardWebMcpTools(store) {
         style: { type: 'string', enum: ['straight', 'orthogonal', 'curved'], description: 'Line routing style' }
       },
       required: ['fromId', 'toId']
+    },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether the connector was created' },
+        id: { type: 'string', description: 'The unique ID assigned to the new connector' },
+        message: { type: 'string', description: 'Confirmation message' }
+      },
+      required: ['success', 'id']
     },
     execute: async (input) => {
       if (!store.elements.has(input.fromId)) {
@@ -135,6 +162,15 @@ export function registerBoardWebMcpTools(store) {
       },
       required: ['title']
     },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether the frame was created' },
+        id: { type: 'string', description: 'The unique ID assigned to the new frame' },
+        message: { type: 'string', description: 'Confirmation message' }
+      },
+      required: ['success', 'id']
+    },
     execute: async (input) => {
       const elem = store.addElement({
         type: 'frame',
@@ -164,6 +200,14 @@ export function registerBoardWebMcpTools(store) {
         title: { type: 'string', description: 'Title or topic of the diagram' }
       },
       required: ['diagramType']
+    },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether the diagram was generated' },
+        message: { type: 'string', description: 'Summary of the generated diagram' }
+      },
+      required: ['success']
     },
     execute: async (input) => {
       store.pushSnapshot();
@@ -294,6 +338,33 @@ export function registerBoardWebMcpTools(store) {
       type: 'object',
       properties: {}
     },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        boardId: { type: 'string', description: 'Board identifier' },
+        boardTitle: { type: 'string', description: 'Current board title' },
+        totalElements: { type: 'number', description: 'Count of elements currently on board' },
+        zoom: { type: 'number', description: 'Current zoom factor' },
+        elements: {
+          type: 'array',
+          description: 'List of elements on the canvas',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', description: 'Element ID' },
+              type: { type: 'string', description: 'Element type' },
+              text: { type: 'string', description: 'Label or content text' },
+              x: { type: 'number', description: 'X position' },
+              y: { type: 'number', description: 'Y position' },
+              width: { type: 'number', description: 'Width' },
+              height: { type: 'number', description: 'Height' }
+            },
+            required: ['id', 'type']
+          }
+        }
+      },
+      required: ['boardId', 'totalElements', 'elements']
+    },
     execute: async () => {
       const elements = Array.from(store.elements.values()).map(el => ({
         id: el.id,
@@ -317,29 +388,53 @@ export function registerBoardWebMcpTools(store) {
   // 7. Update Elements
   registerTool({
     name: 'whiteboard_update_elements',
-    title: 'Update Element Properties',
-    description: 'Updates properties (text, color, coordinates) of existing whiteboard elements.',
+    title: 'Update Whiteboard Elements',
+    description: 'Updates properties (text, color, coordinates) of existing whiteboard elements by ID.',
     inputSchema: {
       type: 'object',
       properties: {
         id: { type: 'string', description: 'ID of element to update' },
+        ids: { type: 'array', items: { type: 'string' }, description: 'Optional array of element IDs to update in batch' },
         text: { type: 'string', description: 'New text content' },
         color: { type: 'string', description: 'New color' },
         x: { type: 'number', description: 'New X position' },
         y: { type: 'number', description: 'New Y position' }
+      }
+    },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether update succeeded' },
+        updated: { type: 'object', description: 'Updated element object' },
+        updatedCount: { type: 'number', description: 'Count of updated elements' }
       },
-      required: ['id']
+      required: ['success']
     },
     execute: async (input) => {
+      const targetIds = [];
+      if (input.id) targetIds.push(input.id);
+      if (Array.isArray(input.ids)) targetIds.push(...input.ids);
+      if (targetIds.length === 0) throw new Error('Either "id" or "ids" must be provided');
+
       const updates = {};
       if (input.text !== undefined) updates.text = input.text;
       if (input.color !== undefined) updates.color = input.color;
       if (input.x !== undefined) updates.x = input.x;
       if (input.y !== undefined) updates.y = input.y;
 
-      const updated = store.updateElement(input.id, updates, true);
-      if (!updated) throw new Error(`Element "${input.id}" not found`);
-      return { success: true, updated };
+      let lastUpdated = null;
+      let count = 0;
+      for (const tid of targetIds) {
+        const res = store.updateElement(tid, updates, true);
+        if (res) {
+          lastUpdated = res;
+          count++;
+        }
+      }
+      if (count === 0) {
+        throw new Error(`Element "${input.id || targetIds[0]}" not found`);
+      }
+      return { success: true, updated: lastUpdated, updatedCount: count };
     }
   });
 
@@ -359,6 +454,14 @@ export function registerBoardWebMcpTools(store) {
       },
       required: ['ids']
     },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether deletion succeeded' },
+        deletedCount: { type: 'number', description: 'Count of elements deleted' }
+      },
+      required: ['success', 'deletedCount']
+    },
     execute: async (input) => {
       store.removeElements(input.ids, true);
       return { success: true, deletedCount: input.ids.length };
@@ -371,6 +474,14 @@ export function registerBoardWebMcpTools(store) {
     title: 'Clear Whiteboard',
     description: 'Wipes all content from the whiteboard.',
     inputSchema: { type: 'object', properties: {} },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether the board was cleared' },
+        message: { type: 'string', description: 'Status message' }
+      },
+      required: ['success']
+    },
     execute: async () => {
       store.clearBoard();
       return { success: true, message: 'Whiteboard cleared' };
@@ -383,6 +494,14 @@ export function registerBoardWebMcpTools(store) {
     title: 'Zoom to Fit All Elements',
     description: 'Adjusts zoom and pan to fit all content comfortably within the viewport.',
     inputSchema: { type: 'object', properties: {} },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Whether zoom was adjusted' },
+        zoom: { type: 'number', description: 'Resulting zoom level' }
+      },
+      required: ['success', 'zoom']
+    },
     execute: async () => {
       store.zoomToFit(1200, 800);
       return { success: true, zoom: store.zoom };

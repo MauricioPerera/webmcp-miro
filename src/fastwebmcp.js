@@ -143,7 +143,11 @@ export function defineTool(spec) {
     ? spec.inputSchema.toJSONSchema()
     : spec.inputSchema || { type: 'object', properties: {} };
 
-  return {
+  const rawOutputSchema = spec.outputSchema && typeof spec.outputSchema.toJSONSchema === 'function'
+    ? spec.outputSchema.toJSONSchema()
+    : spec.outputSchema || undefined;
+
+  const defined = {
     name: spec.name,
     title: spec.title || spec.name,
     description: spec.description,
@@ -158,6 +162,12 @@ export function defineTool(spec) {
       return await spec.execute(rawInput, { signal });
     }
   };
+
+  if (rawOutputSchema) {
+    defined.outputSchema = rawOutputSchema;
+  }
+
+  return defined;
 }
 
 /**

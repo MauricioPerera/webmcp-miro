@@ -144,7 +144,7 @@ export class BoardStore {
   }
 
   snap(val) {
-    if (!this.snapToGrid) return val;
+    if (!this.snapToGrid || typeof val !== 'number' || !Number.isFinite(val)) return val;
     return Math.round(val / this.gridSize) * this.gridSize;
   }
 
@@ -155,26 +155,29 @@ export class BoardStore {
   }
 
   addElement(element, recordHistory = true) {
+    if (!element || typeof element !== 'object') {
+      throw new Error('addElement: element must be an object');
+    }
     if (!element.id) {
       element.id = this.generateId(element.type || 'el');
     }
     if (recordHistory) this.pushSnapshot();
 
     // Default sizing & positioning if omitted
-    element.x = element.x ?? 100;
-    element.y = element.y ?? 100;
-    element.rotation = element.rotation ?? 0;
+    element.x = Number.isFinite(element.x) ? element.x : 100;
+    element.y = Number.isFinite(element.y) ? element.y : 100;
+    element.rotation = Number.isFinite(element.rotation) ? element.rotation : 0;
     element.zIndex = element.zIndex ?? (this.elements.size + 1);
 
     if (element.type === 'sticky') {
-      element.width = element.width ?? 180;
-      element.height = element.height ?? 180;
+      element.width = Math.max(10, element.width ?? 180);
+      element.height = Math.max(10, element.height ?? 180);
       element.color = element.color ?? PASTEL_COLORS.yellow;
       element.text = element.text ?? 'Note';
       element.fontSize = element.fontSize ?? 16;
     } else if (element.type === 'shape') {
-      element.width = element.width ?? 160;
-      element.height = element.height ?? 100;
+      element.width = Math.max(10, element.width ?? 160);
+      element.height = Math.max(10, element.height ?? 100);
       element.shapeType = element.shapeType ?? 'rectangle';
       element.fillColor = element.fillColor ?? '#FFFFFF';
       element.strokeColor = element.strokeColor ?? '#1E293B';
@@ -184,14 +187,14 @@ export class BoardStore {
       element.textColor = element.textColor ?? '#0F172A';
       element.fontSize = element.fontSize ?? 14;
     } else if (element.type === 'text') {
-      element.width = element.width ?? 200;
-      element.height = element.height ?? 50;
+      element.width = Math.max(10, element.width ?? 200);
+      element.height = Math.max(10, element.height ?? 50);
       element.text = element.text ?? 'Text';
       element.fontSize = element.fontSize ?? 20;
       element.color = element.color ?? '#0F172A';
     } else if (element.type === 'frame') {
-      element.width = element.width ?? 500;
-      element.height = element.height ?? 350;
+      element.width = Math.max(50, element.width ?? 500);
+      element.height = Math.max(50, element.height ?? 350);
       element.title = element.title ?? 'Frame';
       element.color = element.color ?? '#E2E8F0';
     } else if (element.type === 'connector') {
@@ -203,7 +206,7 @@ export class BoardStore {
       element.endArrow = element.endArrow ?? 'arrow';
       element.label = element.label ?? '';
     } else if (element.type === 'draw') {
-      element.points = element.points ?? [];
+      element.points = Array.isArray(element.points) ? element.points : [];
       element.strokeColor = element.strokeColor ?? '#0F172A';
       element.strokeWidth = element.strokeWidth ?? 3;
       element.opacity = element.opacity ?? 1.0;
@@ -217,7 +220,7 @@ export class BoardStore {
 
   updateElement(id, updates, recordHistory = false) {
     const el = this.elements.get(id);
-    if (!el) return null;
+    if (!el || !updates || typeof updates !== 'object') return null;
 
     if (recordHistory) this.pushSnapshot();
     Object.assign(el, updates);
@@ -241,18 +244,24 @@ export class BoardStore {
   }
 
   isElementInsideFrame(elem, frame, dx = 0, dy = 0) {
-    if (elem.type === 'frame') return false;
+    if (!elem || !frame || elem.type === 'frame') return false;
     const fx = frame.x - dx;
     const fy = frame.y - dy;
+    const ew = typeof elem.width === 'number' ? elem.width : 0;
+    const eh = typeof elem.height === 'number' ? elem.height : 0;
+    const fw = typeof frame.width === 'number' ? frame.width : 500;
+    const fh = typeof frame.height === 'number' ? frame.height : 350;
+
     return (
       elem.x >= fx &&
       elem.y >= fy &&
-      elem.x + (elem.width || 0) <= fx + frame.width &&
-      elem.y + (elem.height || 0) <= fy + frame.height
+      elem.x + ew <= fx + fw &&
+      elem.y + eh <= fy + fh
     );
   }
 
   removeElements(ids, recordHistory = true) {
+    if (!Array.isArray(ids) || ids.length === 0) return;
     const idSet = new Set(ids);
     if (idSet.size === 0) return;
     if (recordHistory) this.pushSnapshot();
@@ -276,7 +285,7 @@ export class BoardStore {
   }
 
   duplicateElements(ids) {
-    if (!ids || ids.length === 0) return [];
+    if (!Array.isArray(ids) || ids.length === 0) return [];
     this.pushSnapshot();
     const newElements = [];
     const idMap = new Map();
@@ -328,10 +337,10 @@ export class BoardStore {
 
   getAnchorPoints(elem) {
     if (!elem) return [];
-    const x = elem.x;
-    const y = elem.y;
-    const w = elem.width || 100;
-    const h = elem.height || 100;
+    const x = elem.x || 0;
+    const y = elem.y || 0;
+    const w = typeof elem.width === 'number' && elem.width > 0 ? elem.width : 100;
+    const h = typeof elem.height === 'number' && elem.height > 0 ? elem.height : 100;
     return [
       { side: 'top', x: x + w / 2, y },
       { side: 'right', x: x + w, y: y + h / 2 },
@@ -363,10 +372,18 @@ export class BoardStore {
     const toElem = connector.toId ? this.elements.get(connector.toId) : null;
 
     if (fromElem && toElem) {
-      const fromCenter = { x: fromElem.x + fromElem.width / 2, y: fromElem.y + fromElem.height / 2 };
-      const toCenter = { x: toElem.x + toElem.width / 2, y: toElem.y + toElem.height / 2 };
-      fromPt = this.getNearestAnchor(fromElem, toCenter);
-      toPt = this.getNearestAnchor(toElem, fromCenter);
+      // Handle self-loop edge case
+      if (fromElem.id === toElem.id) {
+        const ew = typeof fromElem.width === 'number' ? fromElem.width : 100;
+        const eh = typeof fromElem.height === 'number' ? fromElem.height : 100;
+        fromPt = { side: 'top', x: fromElem.x + ew / 2, y: fromElem.y };
+        toPt = { side: 'right', x: fromElem.x + ew, y: fromElem.y + eh / 2 };
+      } else {
+        const fromCenter = { x: fromElem.x + (fromElem.width || 100) / 2, y: fromElem.y + (fromElem.height || 100) / 2 };
+        const toCenter = { x: toElem.x + (toElem.width || 100) / 2, y: toElem.y + (toElem.height || 100) / 2 };
+        fromPt = this.getNearestAnchor(fromElem, toCenter);
+        toPt = this.getNearestAnchor(toElem, fromCenter);
+      }
     } else if (fromElem) {
       fromPt = this.getNearestAnchor(fromElem, toPt);
     } else if (toElem) {
@@ -379,9 +396,11 @@ export class BoardStore {
   // --- Alignment & Layering ---
 
   alignElements(ids, alignment) {
-    if (ids.length < 2) return;
-    this.pushSnapshot();
+    if (!Array.isArray(ids) || ids.length < 2) return;
     const items = ids.map(id => this.elements.get(id)).filter(Boolean);
+    if (items.length < 2) return;
+
+    this.pushSnapshot();
 
     let minX = Math.min(...items.map(i => i.x));
     let maxX = Math.max(...items.map(i => i.x + (i.width || 0)));
@@ -414,6 +433,7 @@ export class BoardStore {
   }
 
   bringToFront(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) return;
     this.pushSnapshot();
     const maxZ = Math.max(0, ...Array.from(this.elements.values()).map(e => e.zIndex || 0));
     let z = maxZ + 1;
@@ -425,6 +445,7 @@ export class BoardStore {
   }
 
   sendToBack(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) return;
     this.pushSnapshot();
     const minZ = Math.min(0, ...Array.from(this.elements.values()).map(e => e.zIndex || 0));
     let z = minZ - ids.length;
@@ -447,19 +468,30 @@ export class BoardStore {
     let maxY = -Infinity;
 
     for (const el of this.elements.values()) {
-      if (el.type === 'draw' && el.points && el.points.length > 0) {
+      if (el.type === 'draw' && Array.isArray(el.points) && el.points.length > 0) {
         for (const pt of el.points) {
-          minX = Math.min(minX, pt.x);
-          minY = Math.min(minY, pt.y);
-          maxX = Math.max(maxX, pt.x);
-          maxY = Math.max(maxY, pt.y);
+          if (Number.isFinite(pt.x) && Number.isFinite(pt.y)) {
+            minX = Math.min(minX, pt.x);
+            minY = Math.min(minY, pt.y);
+            maxX = Math.max(maxX, pt.x);
+            maxY = Math.max(maxY, pt.y);
+          }
         }
       } else {
-        minX = Math.min(minX, el.x);
-        minY = Math.min(minY, el.y);
-        maxX = Math.max(maxX, el.x + (el.width || 50));
-        maxY = Math.max(maxY, el.y + (el.height || 50));
+        const ex = Number.isFinite(el.x) ? el.x : 0;
+        const ey = Number.isFinite(el.y) ? el.y : 0;
+        const ew = Number.isFinite(el.width) ? el.width : 50;
+        const eh = Number.isFinite(el.height) ? el.height : 50;
+
+        minX = Math.min(minX, ex);
+        minY = Math.min(minY, ey);
+        maxX = Math.max(maxX, ex + ew);
+        maxY = Math.max(maxY, ey + eh);
       }
+    }
+
+    if (!Number.isFinite(minX) || !Number.isFinite(minY)) {
+      return { minX: 0, minY: 0, maxX: 800, maxY: 600, width: 800, height: 600 };
     }
 
     return {
@@ -474,8 +506,8 @@ export class BoardStore {
 
   zoomToFit(viewportWidth = 1200, viewportHeight = 800, padding = 80) {
     const bounds = this.getBoardBounds();
-    const availableW = viewportWidth - padding * 2;
-    const availableH = viewportHeight - padding * 2;
+    const availableW = Math.max(50, viewportWidth - padding * 2);
+    const availableH = Math.max(50, viewportHeight - padding * 2);
     const scaleX = availableW / bounds.width;
     const scaleY = availableH / bounds.height;
     const targetZoom = Math.min(1.5, Math.max(0.15, Math.min(scaleX, scaleY)));
@@ -506,16 +538,20 @@ export class BoardStore {
 
   importFromJSON(jsonStr) {
     try {
+      if (!jsonStr) return false;
       const data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+      if (!Array.isArray(data.elements)) return false; // Guard: must have valid elements array
+
       this.pushSnapshot();
       this.elements.clear();
-      this.boardTitle = data.boardTitle || this.boardTitle;
-      this.panX = data.panX ?? this.panX;
-      this.panY = data.panY ?? this.panY;
-      this.zoom = data.zoom ?? this.zoom;
+      this.boardTitle = typeof data.boardTitle === 'string' ? data.boardTitle : this.boardTitle;
+      this.panX = Number.isFinite(data.panX) ? data.panX : this.panX;
+      this.panY = Number.isFinite(data.panY) ? data.panY : this.panY;
+      this.zoom = Number.isFinite(data.zoom) && data.zoom > 0 ? data.zoom : this.zoom;
 
-      if (Array.isArray(data.elements)) {
-        for (const el of data.elements) {
+      for (const el of data.elements) {
+        if (el && typeof el === 'object' && el.id) {
           this.elements.set(el.id, el);
         }
       }
@@ -523,7 +559,7 @@ export class BoardStore {
       this.notify('import');
       return true;
     } catch (err) {
-      console.error('Failed to import JSON:', err);
+      console.warn('Failed to import JSON:', err);
       return false;
     }
   }
@@ -558,7 +594,8 @@ export class BoardStore {
     try {
       const indexStr = localStorage.getItem('miro_boards_index') || '[]';
       const index = JSON.parse(indexStr);
-      const existing = index.find(b => b.id === this.boardId);
+      if (!Array.isArray(index)) return;
+      const existing = index.find(b => b && b.id === this.boardId);
       if (existing) {
         existing.title = this.boardTitle;
         existing.updatedAt = Date.now();

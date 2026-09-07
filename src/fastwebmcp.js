@@ -71,8 +71,8 @@ export function validateSchema(schema, data) {
       }
     }
   } else if (schema.type === 'number' || schema.type === 'integer') {
-    if (typeof data !== 'number' || Number.isNaN(data)) {
-      errors.push(`Expected number, received ${typeof data}`);
+    if (typeof data !== 'number' || Number.isNaN(data) || !Number.isFinite(data)) {
+      errors.push(`Expected valid finite number, received ${data}`);
     } else {
       if (schema.type === 'integer' && !Number.isInteger(data)) {
         errors.push(`Expected integer, received float`);

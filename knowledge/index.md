@@ -16,3 +16,4 @@ Bienvenido a la base de conocimiento OKF del clon 100% funcional de Miro para Gi
 - [Contrato: Modelo de Elementos y Conectores](contracts/task-elements-model.md)
 - [Contrato: Historial de Deshacer/Rehacer y Persistencia](contracts/task-history-persistence.md)
 - [Contrato: Herramientas WebMCP para Agentes de IA](contracts/task-webmcp-tools.md)
+- [Contrato: Batería de Pruebas Adversarias y Casos Extremos](contracts/task-adversarial-stress.md)

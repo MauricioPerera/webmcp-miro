@@ -48,6 +48,12 @@ Engineered following **Knowledge-Driven Development (KDD)**, styled with **Tailw
 - **Export Formats:** PNG (high-DPI), SVG (vector), and JSON.
 - **Import:** Full board restore from JSON backups.
 
+### 6. Tri-Lingual Support (i18n: ES, EN, PT)
+- **100% Client-Side Internationalization:** Instantaneous, zero-dependency language switching without page reloads.
+- **Supported Languages:** Español (`es`), English (`en`), and Português (`pt`).
+- **Comprehensive Coverage:** Both the Landing Page (`index.html`) and Whiteboard Workspace (`app.html`), covering toolbars, WebMCP AI Agent console, modals, and tooltips.
+- **Persistent Preference:** Remembers language selection across sessions in `localStorage` (`webmcp_miro_lang`) with smart fallback to `navigator.language`.
+
 ---
 
 ## 🧠 Knowledge-Driven Development (KDD)
@@ -60,6 +66,7 @@ This project strictly follows the **KDD** methodology combining **OKF** (knowled
   - `architecture-state.md`: Data store, elements schema, and undo/redo history.
   - `architecture-webmcp.md`: WebMCP registration and tool definitions.
   - `architecture-ui.md`: Tailwind CSS layout and HTMX integration.
+  - `i18n.md`: Tri-lingual architecture and translation dictionary parity.
   - `validacion.md`: Quality gates and validation protocol.
 - `knowledge/contracts/`: CCDD task contracts with sealed `tests_sha256` hashes, `touch_only` boundaries, and explicit sections (`## Intent`, `## Interface`, `## Invariants`, `## Examples`, `## Do / Don't`, `## Tests`, `## Constraints`).
 - `scripts/`: Deterministic Python validation scripts (`validate_okf.py`, `validate_contracts.py`).

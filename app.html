@@ -59,9 +59,9 @@
   <!-- Top Navigation Bar -->
   <header class="h-14 bg-white/90 dark:bg-slate-800/90 backdrop-blur border-b border-slate-200 dark:border-slate-700 px-4 flex items-center justify-between z-30 shrink-0 select-none">
     <div class="flex items-center gap-3">
-      <a href="index.html" title="Volver al Inicio" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+      <a href="index.html" title="Volver al Inicio" data-i18n-title="nav.home" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
         <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        <span class="hidden sm:inline">Inicio</span>
+        <span class="hidden sm:inline" data-i18n="nav.home">Inicio</span>
       </a>
 
       <div class="h-5 w-px bg-slate-200 dark:bg-slate-700"></div>
@@ -73,24 +73,31 @@
             <path d="M4 4h4v16H4V4zm6 4h4v12h-4V8zm6 4h4v8h-4v-8z"/>
           </svg>
         </div>
-        <input id="board-title-input" type="text" value="Brainstorm & Architecture Board" class="font-semibold text-sm bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded px-2 py-1 outline-none focus:border-blue-500 text-slate-800 dark:text-slate-100 transition-all">
+        <input id="board-title-input" type="text" value="Brainstorm & Architecture Board" data-i18n-placeholder="app.defaultTitle" class="font-semibold text-sm bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded px-2 py-1 outline-none focus:border-blue-500 text-slate-800 dark:text-slate-100 transition-all">
       </div>
 
       <div class="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
       <!-- History Controls -->
       <div class="flex items-center gap-1">
-        <button id="undo-btn" title="Undo (Ctrl+Z)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
+        <button id="undo-btn" title="Undo (Ctrl+Z)" data-i18n-title="app.undo" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
           <i data-lucide="undo-2" class="w-4 h-4"></i>
         </button>
-        <button id="redo-btn" title="Redo (Ctrl+Y)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
+        <button id="redo-btn" title="Redo (Ctrl+Y)" data-i18n-title="app.redo" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
           <i data-lucide="redo-2" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
 
-    <!-- Center status & WebMCP indicator -->
-    <div class="flex items-center gap-2">
+    <!-- Center status, Language Selector & WebMCP indicator -->
+    <div class="flex items-center gap-3">
+      <!-- Language Selector -->
+      <div class="flex items-center bg-slate-100 dark:bg-slate-700/60 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] font-semibold">
+        <button data-lang="es" class="lang-switcher-btn px-2 py-0.5 rounded-md transition-all">ES</button>
+        <button data-lang="en" class="lang-switcher-btn px-2 py-0.5 rounded-md transition-all">EN</button>
+        <button data-lang="pt" class="lang-switcher-btn px-2 py-0.5 rounded-md transition-all">PT</button>
+      </div>
+
       <div id="webmcp-status-badge">
         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
           <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -103,17 +110,17 @@
     <div class="flex items-center gap-2">
       <button id="templates-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">
         <i data-lucide="layout-template" class="w-3.5 h-3.5"></i>
-        Templates
+        <span data-i18n="nav.templates">Templates</span>
       </button>
 
       <button id="open-webmcp-console-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 rounded-lg transition-colors">
         <i data-lucide="bot" class="w-3.5 h-3.5"></i>
-        WebMCP Agent
+        <span data-i18n="nav.webmcpAgent">WebMCP Agent</span>
       </button>
 
       <button id="export-menu-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">
         <i data-lucide="download" class="w-3.5 h-3.5"></i>
-        Export
+        <span data-i18n="nav.export">Export</span>
       </button>
     </div>
   </header>
@@ -126,11 +133,11 @@
 
     <!-- Left Floating Primary Toolbar -->
     <aside id="primary-toolbar" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1 p-1.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur border border-slate-200 dark:border-slate-700 rounded-2xl toolbar-shadow select-none">
-      <button data-tool="select" title="Select (V)" class="p-2.5 rounded-xl text-white bg-blue-600 transition-all flex items-center justify-center">
+      <button data-tool="select" title="Select (V)" data-i18n-title="app.select" class="p-2.5 rounded-xl text-white bg-blue-600 transition-all flex items-center justify-center">
         <i data-lucide="mouse-pointer-2" class="w-5 h-5"></i>
       </button>
 
-      <button data-tool="hand" title="Hand / Pan (H or Space+drag)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+      <button data-tool="hand" title="Hand / Pan (H or Space+drag)" data-i18n-title="app.pan" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
         <i data-lucide="hand" class="w-5 h-5"></i>
       </button>
 
@@ -138,7 +145,7 @@
 
       <!-- Sticky Note with Popup Color Submenu -->
       <div class="relative">
-        <button data-tool="sticky" title="Sticky Note (S)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <button data-tool="sticky" title="Sticky Note (S)" data-i18n-title="app.sticky" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
           <i data-lucide="sticky-note" class="w-5 h-5"></i>
         </button>
         <div id="sticky-colors-menu" class="toolbar-submenu hidden absolute left-full ml-3 top-0 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl toolbar-shadow flex gap-1.5 z-30">
@@ -153,56 +160,56 @@
 
       <!-- Shapes with Popup Submenu -->
       <div class="relative">
-        <button data-tool="shape" title="Shapes (R)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <button data-tool="shape" title="Shapes (R)" data-i18n-title="app.shape" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
           <i data-lucide="shapes" class="w-5 h-5"></i>
         </button>
         <div id="shapes-menu" class="toolbar-submenu hidden absolute left-full ml-3 top-0 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl toolbar-shadow grid grid-cols-2 gap-2 w-36 z-30">
           <button data-shape-type="rectangle" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
-            <i data-lucide="square" class="w-4 h-4 mb-1"></i> Rect
+            <i data-lucide="square" class="w-4 h-4 mb-1"></i> <span data-i18n="shape.rect">Rect</span>
           </button>
           <button data-shape-type="circle" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
-            <i data-lucide="circle" class="w-4 h-4 mb-1"></i> Circle
+            <i data-lucide="circle" class="w-4 h-4 mb-1"></i> <span data-i18n="shape.circle">Circle</span>
           </button>
           <button data-shape-type="diamond" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
-            <i data-lucide="diamond" class="w-4 h-4 mb-1"></i> Diamond
+            <i data-lucide="diamond" class="w-4 h-4 mb-1"></i> <span data-i18n="shape.diamond">Diamond</span>
           </button>
           <button data-shape-type="triangle" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
-            <i data-lucide="triangle" class="w-4 h-4 mb-1"></i> Triangle
+            <i data-lucide="triangle" class="w-4 h-4 mb-1"></i> <span data-i18n="shape.triangle">Triangle</span>
           </button>
           <button data-shape-type="cylinder" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
-            <i data-lucide="database" class="w-4 h-4 mb-1"></i> Database
+            <i data-lucide="database" class="w-4 h-4 mb-1"></i> <span data-i18n="shape.cylinder">Database</span>
           </button>
           <button data-shape-type="cloud" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
-            <i data-lucide="cloud" class="w-4 h-4 mb-1"></i> Cloud
+            <i data-lucide="cloud" class="w-4 h-4 mb-1"></i> <span data-i18n="shape.cloud">Cloud</span>
           </button>
         </div>
       </div>
 
-      <button data-tool="text" title="Text (T)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+      <button data-tool="text" title="Text (T)" data-i18n-title="app.text" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
         <i data-lucide="type" class="w-5 h-5"></i>
       </button>
 
-      <button data-tool="connector" title="Smart Arrow / Connector (C)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+      <button data-tool="connector" title="Smart Arrow / Connector (C)" data-i18n-title="app.connector" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
         <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
       </button>
 
       <div class="h-px w-6 bg-slate-200 dark:bg-slate-700 my-1 self-center"></div>
 
-      <button data-tool="pen" title="Pen (P)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+      <button data-tool="pen" title="Pen (P)" data-i18n-title="app.pen" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
         <i data-lucide="pen-tool" class="w-5 h-5"></i>
       </button>
 
-      <button data-tool="highlighter" title="Highlighter" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+      <button data-tool="highlighter" title="Highlighter" data-i18n-title="app.highlighter" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
         <i data-lucide="highlighter" class="w-5 h-5"></i>
       </button>
 
-      <button data-tool="eraser" title="Eraser" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+      <button data-tool="eraser" title="Eraser" data-i18n-title="app.eraser" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
         <i data-lucide="eraser" class="w-5 h-5"></i>
       </button>
 
       <div class="h-px w-6 bg-slate-200 dark:bg-slate-700 my-1 self-center"></div>
 
-      <button data-tool="frame" title="Frame Container (F)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+      <button data-tool="frame" title="Frame Container (F)" data-i18n-title="app.frame" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
         <i data-lucide="frame" class="w-5 h-5"></i>
       </button>
     </aside>
@@ -219,18 +226,18 @@
       </div>
 
       <!-- Layering -->
-      <button id="ctx-bring-front" title="Bring to Front" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+      <button id="ctx-bring-front" title="Bring to Front" data-i18n-title="ctx.bringFront" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
         <i data-lucide="bring-to-front" class="w-4 h-4"></i>
       </button>
-      <button id="ctx-send-back" title="Send to Back" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+      <button id="ctx-send-back" title="Send to Back" data-i18n-title="ctx.sendBack" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
         <i data-lucide="send-to-back" class="w-4 h-4"></i>
       </button>
 
       <!-- Duplicate & Delete -->
-      <button id="ctx-duplicate" title="Duplicate (Ctrl+D)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+      <button id="ctx-duplicate" title="Duplicate (Ctrl+D)" data-i18n-title="ctx.duplicate" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
         <i data-lucide="copy" class="w-4 h-4"></i>
       </button>
-      <button id="ctx-delete" title="Delete (Del)" class="p-1.5 rounded hover:bg-rose-50 text-rose-600">
+      <button id="ctx-delete" title="Delete (Del)" data-i18n-title="ctx.delete" class="p-1.5 rounded hover:bg-rose-50 text-rose-600">
         <i data-lucide="trash-2" class="w-4 h-4"></i>
       </button>
     </div>
@@ -244,25 +251,25 @@
 
       <!-- Floating Zoom Dock -->
       <div class="flex items-center gap-1 bg-white/95 dark:bg-slate-800/95 border border-slate-200 dark:border-slate-700 rounded-xl toolbar-shadow p-1 backdrop-blur">
-        <button id="zoom-out-btn" title="Zoom Out" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+        <button id="zoom-out-btn" title="Zoom Out" data-i18n-title="app.zoomOut" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
           <i data-lucide="minus" class="w-3.5 h-3.5"></i>
         </button>
 
-        <button id="zoom-reset-btn" title="Reset Zoom to 100%" class="text-xs font-semibold px-1.5 py-1 text-slate-700 dark:text-slate-200 w-12 text-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
+        <button id="zoom-reset-btn" title="Reset Zoom to 100%" data-i18n-title="app.zoomReset" class="text-xs font-semibold px-1.5 py-1 text-slate-700 dark:text-slate-200 w-12 text-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
           <span id="zoom-percentage">100%</span>
         </button>
 
-        <button id="zoom-in-btn" title="Zoom In" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+        <button id="zoom-in-btn" title="Zoom In" data-i18n-title="app.zoomIn" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
         </button>
 
         <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
-        <button id="zoom-fit-btn" title="Zoom to Fit (0)" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+        <button id="zoom-fit-btn" title="Zoom to Fit (0)" data-i18n-title="app.zoomFit" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
           <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
         </button>
 
-        <button id="toggle-minimap-btn" title="Toggle Minimap" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+        <button id="toggle-minimap-btn" title="Toggle Minimap" data-i18n-title="app.minimap" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
           <i data-lucide="map" class="w-3.5 h-3.5"></i>
         </button>
       </div>
@@ -276,7 +283,7 @@
         <div class="w-6 h-6 rounded-md bg-emerald-500 text-white flex items-center justify-center">
           <i data-lucide="bot" class="w-4 h-4"></i>
         </div>
-        <h2 class="font-semibold text-sm">WebMCP AI Agent Console</h2>
+        <h2 class="font-semibold text-sm" data-i18n="drawer.title">WebMCP AI Agent Console</h2>
       </div>
       <button id="close-webmcp-drawer" class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500">
         <i data-lucide="x" class="w-4 h-4"></i>
@@ -286,18 +293,18 @@
     <div class="p-4 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4">
       <!-- Quick AI Prompts -->
       <div>
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Simulate Agent Commands</h3>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2" data-i18n="drawer.simulateCommands">Simulate Agent Commands</h3>
         <div class="grid grid-cols-2 gap-2">
-          <button data-agent-prompt="kanban" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
+          <button data-agent-prompt="kanban" data-i18n="drawer.btnKanban" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
             📋 Generate Kanban Board
           </button>
-          <button data-agent-prompt="architecture" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
+          <button data-agent-prompt="architecture" data-i18n="drawer.btnArchitecture" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
             ☁️ Cloud Architecture
           </button>
-          <button data-agent-prompt="mindmap" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
+          <button data-agent-prompt="mindmap" data-i18n="drawer.btnMindmap" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
             🧠 Agent Swarm Mindmap
           </button>
-          <button data-agent-prompt="sticky_trio" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
+          <button data-agent-prompt="sticky_trio" data-i18n="drawer.btnStickies" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
             💡 3 Strategy Stickies
           </button>
         </div>
@@ -305,25 +312,25 @@
 
       <!-- Tool Execution Form -->
       <div class="flex flex-col gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Direct Tool Runner</h3>
-        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Select Tool:</label>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400" data-i18n="drawer.directRunner">Direct Tool Runner</h3>
+        <label class="text-xs font-medium text-slate-600 dark:text-slate-300" data-i18n="drawer.selectTool">Select Tool:</label>
         <select id="webmcp-tool-select" class="text-xs p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-blue-500"></select>
 
-        <label class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2">Input Arguments (JSON):</label>
+        <label class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2" data-i18n="drawer.inputArgs">Input Arguments (JSON):</label>
         <textarea id="webmcp-tool-input" rows="4" class="text-xs font-mono p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-blue-500"></textarea>
 
         <button id="webmcp-run-tool-btn" class="mt-2 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-lg shadow transition-colors flex items-center justify-center gap-1.5">
           <i data-lucide="play" class="w-3.5 h-3.5"></i>
-          Execute WebMCP Tool
+          <span data-i18n="drawer.executeBtn">Execute WebMCP Tool</span>
         </button>
 
-        <label class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2">Output Response:</label>
-        <pre id="webmcp-tool-result" class="p-3 bg-slate-900 text-slate-400 font-mono text-xs rounded overflow-x-auto min-h-[70px]">Awaiting invocation...</pre>
+        <label class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2" data-i18n="drawer.outputResponse">Output Response:</label>
+        <pre id="webmcp-tool-result" data-i18n="drawer.awaiting" class="p-3 bg-slate-900 text-slate-400 font-mono text-xs rounded overflow-x-auto min-h-[70px]">Awaiting invocation...</pre>
       </div>
 
       <!-- Registered Tools Catalog -->
       <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Registered Tools Catalog</h3>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2" data-i18n="drawer.catalog">Registered Tools Catalog</h3>
         <div id="webmcp-tools-list" class="flex flex-col gap-2"></div>
       </div>
     </div>
@@ -333,7 +340,7 @@
   <div id="templates-modal" class="modal-container hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
       <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700">
-        <h3 class="text-base font-semibold">Choose a Miro Whiteboard Template</h3>
+        <h3 class="text-base font-semibold" data-i18n="modal.templatesTitle">Choose a Miro Whiteboard Template</h3>
         <button data-close-modal class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -341,20 +348,20 @@
 
       <div class="grid grid-cols-2 gap-3 mt-4">
         <div data-template="kanban" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 cursor-pointer transition-all">
-          <div class="font-semibold text-sm mb-1">📋 Kanban Board</div>
-          <p class="text-xs text-slate-500">To Do, In Progress, Done columns with pastel sticky notes.</p>
+          <div class="font-semibold text-sm mb-1" data-i18n="templates.kanbanTitle">📋 Kanban Board</div>
+          <p class="text-xs text-slate-500" data-i18n="templates.kanbanDesc">To Do, In Progress, Done columns with pastel sticky notes.</p>
         </div>
         <div data-template="flowchart" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 cursor-pointer transition-all">
-          <div class="font-semibold text-sm mb-1">🔀 Flowchart</div>
-          <p class="text-xs text-slate-500">Process flow with decision diamond and orthogonal arrows.</p>
+          <div class="font-semibold text-sm mb-1" data-i18n="templates.flowchartTitle">🔀 Flowchart</div>
+          <p class="text-xs text-slate-500" data-i18n="templates.flowchartDesc">Process flow with decision diamond and orthogonal arrows.</p>
         </div>
         <div data-template="mindmap" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 cursor-pointer transition-all">
-          <div class="font-semibold text-sm mb-1">🧠 Mind Map</div>
-          <p class="text-xs text-slate-500">Radial concept tree with curved dynamic connectors.</p>
+          <div class="font-semibold text-sm mb-1" data-i18n="templates.mindmapTitle">🧠 Mind Map</div>
+          <p class="text-xs text-slate-500" data-i18n="templates.mindmapDesc">Radial concept tree with curved dynamic connectors.</p>
         </div>
         <div data-template="architecture" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 cursor-pointer transition-all">
-          <div class="font-semibold text-sm mb-1">☁️ System Architecture</div>
-          <p class="text-xs text-slate-500">Client, FastWebMCP gateway, canvas engine, and storage DB.</p>
+          <div class="font-semibold text-sm mb-1" data-i18n="templates.architectureTitle">☁️ System Architecture</div>
+          <p class="text-xs text-slate-500" data-i18n="templates.architectureDesc">Client, FastWebMCP gateway, canvas engine, and storage DB.</p>
         </div>
       </div>
     </div>
@@ -364,7 +371,7 @@
   <div id="export-modal" class="modal-container hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
       <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700">
-        <h3 class="text-base font-semibold">Export or Import Board</h3>
+        <h3 class="text-base font-semibold" data-i18n="modal.exportTitle">Export or Import Board</h3>
         <button data-close-modal class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -373,30 +380,30 @@
       <div class="flex flex-col gap-3 mt-4">
         <button id="export-png-btn" class="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center justify-between">
           <div>
-            <div class="font-semibold text-sm">Download PNG Image</div>
-            <div class="text-xs text-slate-500">High resolution image of all board elements.</div>
+            <div class="font-semibold text-sm" data-i18n="modal.pngTitle">Download PNG Image</div>
+            <div class="text-xs text-slate-500" data-i18n="modal.pngDesc">High resolution image of all board elements.</div>
           </div>
           <i data-lucide="image" class="w-5 h-5 text-slate-400"></i>
         </button>
 
         <button id="export-svg-btn" class="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center justify-between">
           <div>
-            <div class="font-semibold text-sm">Download SVG Vector</div>
-            <div class="text-xs text-slate-500">Scalable vector graphics format.</div>
+            <div class="font-semibold text-sm" data-i18n="modal.svgTitle">Download SVG Vector</div>
+            <div class="text-xs text-slate-500" data-i18n="modal.svgDesc">Scalable vector graphics format.</div>
           </div>
           <i data-lucide="file-code" class="w-5 h-5 text-slate-400"></i>
         </button>
 
         <button id="export-json-btn" class="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center justify-between">
           <div>
-            <div class="font-semibold text-sm">Export Board JSON</div>
-            <div class="text-xs text-slate-500">Full backup for migration or agent state.</div>
+            <div class="font-semibold text-sm" data-i18n="modal.jsonTitle">Export Board JSON</div>
+            <div class="text-xs text-slate-500" data-i18n="modal.jsonDesc">Full backup for migration or agent state.</div>
           </div>
           <i data-lucide="file-json" class="w-5 h-5 text-slate-400"></i>
         </button>
 
         <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
-          <label class="block font-semibold text-xs text-slate-700 dark:text-slate-300 mb-1">Import from JSON:</label>
+          <label class="block font-semibold text-xs text-slate-700 dark:text-slate-300 mb-1" data-i18n="modal.importLabel">Import from JSON:</label>
           <input id="import-json-input" type="file" accept=".json" class="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
         </div>
       </div>
@@ -409,6 +416,10 @@
     import { CanvasEngine } from './src/canvas-engine.js';
     import { registerBoardWebMcpTools } from './src/webmcp-board-tools.js';
     import { UIController } from './src/ui-controller.js';
+    import { initI18n } from './src/i18n.js';
+
+    // 0. Initialize Internationalization
+    initI18n();
 
     // 1. Initialize Board Store
     const store = new BoardStore({

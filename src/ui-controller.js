@@ -5,6 +5,7 @@
 
 import { PASTEL_COLORS, SHAPE_TYPES } from './board-store.js';
 import { getRegisteredTools, invokeTool, supportsWebMcp } from './fastwebmcp.js';
+import { t } from './i18n.js';
 
 export class UIController {
   constructor(engine, store) {
@@ -31,6 +32,13 @@ export class UIController {
 
     window.addEventListener('whiteboard:tool-changed', (e) => {
       this.highlightActiveTool(e.detail.tool);
+    });
+
+    window.addEventListener('whiteboard:lang-changed', () => {
+      this.updateWebMcpBadge();
+      if (this.webmcpDrawer && !this.webmcpDrawer.classList.contains('translate-x-full')) {
+        this.populateWebMcpToolsList();
+      }
     });
 
     // Update WebMCP readiness badge
@@ -437,10 +445,12 @@ export class UIController {
   updateWebMcpBadge() {
     if (!this.webmcpBadge) return;
     const isSupported = supportsWebMcp();
+    const nativeText = t('drawer.badgeNative');
+    const fallbackText = t('drawer.badgeFallback');
     if (isSupported) {
-      this.webmcpBadge.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>WebMCP Native Active</span>`;
+      this.webmcpBadge.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>${nativeText}</span>`;
     } else {
-      this.webmcpBadge.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"><span class="w-2 h-2 rounded-full bg-blue-500"></span>WebMCP Fallback Ready</span>`;
+      this.webmcpBadge.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"><span class="w-2 h-2 rounded-full bg-blue-500"></span>${fallbackText}</span>`;
     }
   }
 

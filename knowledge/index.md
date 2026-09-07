@@ -8,6 +8,7 @@ Bienvenido a la base de conocimiento OKF del clon 100% funcional de Miro para Gi
 - [Modelo de Estado y Persistencia](architecture-state.md)
 - [Especificación e Integración FastWebMCP](architecture-webmcp.md)
 - [Arquitectura de Interfaz de Usuario y Tailwind CSS](architecture-ui.md)
+- [Arquitectura de Internacionalizacion (i18n)](i18n.md)
 - [Protocolo de Validación y Gates KDD](validacion.md)
 
 ## Contratos de Tareas (CCDD)
@@ -17,3 +18,5 @@ Bienvenido a la base de conocimiento OKF del clon 100% funcional de Miro para Gi
 - [Contrato: Historial de Deshacer/Rehacer y Persistencia](contracts/task-history-persistence.md)
 - [Contrato: Herramientas WebMCP para Agentes de IA](contracts/task-webmcp-tools.md)
 - [Contrato: Batería de Pruebas Adversarias y Casos Extremos](contracts/task-adversarial-stress.md)
+- [Contrato: Modulo de Internacionalizacion i18n](contracts/task-i18n.md)
+

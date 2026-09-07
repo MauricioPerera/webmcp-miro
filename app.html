@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Miro KDD - 100% Client-Side Whiteboard with WebMCP</title>
+
+  <!-- WebMCP Directory and Agent Discovery Meta -->
+  <meta name="description" content="A 100% client-side Miro clone whiteboard powered by Tailwind CSS, HTMX, KDD, and FastWebMCP agent tools.">
+  <meta name="webmcp-tools" content="whiteboard_create_sticky_note,whiteboard_create_shape,whiteboard_create_connector,whiteboard_create_frame,whiteboard_generate_diagram,whiteboard_get_board_state">
+  <link rel="help" href="https://mauricioperera.github.io/fastwebmcp/">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- HTMX 2.0.4 -->
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom canvas styling */
+    body {
+      margin: 0;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .toolbar-shadow {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="h-full w-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col font-sans">
+
+  <!-- Top Navigation Bar -->
+  <header class="h-14 bg-white/90 dark:bg-slate-800/90 backdrop-blur border-b border-slate-200 dark:border-slate-700 px-4 flex items-center justify-between z-30 shrink-0 select-none">
+    <div class="flex items-center gap-3">
+      <a href="index.html" title="Volver al Inicio" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Inicio</span>
+      </a>
+
+      <div class="h-5 w-px bg-slate-200 dark:bg-slate-700"></div>
+
+      <div class="flex items-center gap-2">
+        <!-- Miro-style Ribbon Icon -->
+        <div class="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center shadow-sm">
+          <svg class="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 4h4v16H4V4zm6 4h4v12h-4V8zm6 4h4v8h-4v-8z"/>
+          </svg>
+        </div>
+        <input id="board-title-input" type="text" value="Brainstorm & Architecture Board" class="font-semibold text-sm bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded px-2 py-1 outline-none focus:border-blue-500 text-slate-800 dark:text-slate-100 transition-all">
+      </div>
+
+      <div class="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+      <!-- History Controls -->
+      <div class="flex items-center gap-1">
+        <button id="undo-btn" title="Undo (Ctrl+Z)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
+          <i data-lucide="undo-2" class="w-4 h-4"></i>
+        </button>
+        <button id="redo-btn" title="Redo (Ctrl+Y)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
+          <i data-lucide="redo-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Center status & WebMCP indicator -->
+    <div class="flex items-center gap-2">
+      <div id="webmcp-status-badge">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+          <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+          WebMCP Ready
+        </span>
+      </div>
+    </div>
+
+    <!-- Right Action Buttons -->
+    <div class="flex items-center gap-2">
+      <button id="templates-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">
+        <i data-lucide="layout-template" class="w-3.5 h-3.5"></i>
+        Templates
+      </button>
+
+      <button id="open-webmcp-console-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 rounded-lg transition-colors">
+        <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+        WebMCP Agent
+      </button>
+
+      <button id="export-menu-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        Export
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Canvas Workspace -->
+  <div class="relative flex-1 w-full h-full overflow-hidden bg-slate-50 dark:bg-slate-900">
+
+    <!-- The 2D High-DPI Whiteboard Canvas -->
+    <canvas id="whiteboard-canvas" class="w-full h-full block cursor-default"></canvas>
+
+    <!-- Left Floating Primary Toolbar -->
+    <aside id="primary-toolbar" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1 p-1.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur border border-slate-200 dark:border-slate-700 rounded-2xl toolbar-shadow select-none">
+      <button data-tool="select" title="Select (V)" class="p-2.5 rounded-xl text-white bg-blue-600 transition-all flex items-center justify-center">
+        <i data-lucide="mouse-pointer-2" class="w-5 h-5"></i>
+      </button>
+
+      <button data-tool="hand" title="Hand / Pan (H or Space+drag)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <i data-lucide="hand" class="w-5 h-5"></i>
+      </button>
+
+      <div class="h-px w-6 bg-slate-200 dark:bg-slate-700 my-1 self-center"></div>
+
+      <!-- Sticky Note with Popup Color Submenu -->
+      <div class="relative">
+        <button data-tool="sticky" title="Sticky Note (S)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+          <i data-lucide="sticky-note" class="w-5 h-5"></i>
+        </button>
+        <div id="sticky-colors-menu" class="toolbar-submenu hidden absolute left-full ml-3 top-0 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl toolbar-shadow flex gap-1.5 z-30">
+          <button data-sticky-color="#FEF08A" class="w-6 h-6 rounded-md bg-[#FEF08A] border border-black/10 hover:scale-110 transition-transform" title="Yellow"></button>
+          <button data-sticky-color="#BAE6FD" class="w-6 h-6 rounded-md bg-[#BAE6FD] border border-black/10 hover:scale-110 transition-transform" title="Blue"></button>
+          <button data-sticky-color="#BBF7D0" class="w-6 h-6 rounded-md bg-[#BBF7D0] border border-black/10 hover:scale-110 transition-transform" title="Green"></button>
+          <button data-sticky-color="#FBCFE8" class="w-6 h-6 rounded-md bg-[#FBCFE8] border border-black/10 hover:scale-110 transition-transform" title="Pink"></button>
+          <button data-sticky-color="#E9D5FF" class="w-6 h-6 rounded-md bg-[#E9D5FF] border border-black/10 hover:scale-110 transition-transform" title="Purple"></button>
+          <button data-sticky-color="#FED7AA" class="w-6 h-6 rounded-md bg-[#FED7AA] border border-black/10 hover:scale-110 transition-transform" title="Orange"></button>
+        </div>
+      </div>
+
+      <!-- Shapes with Popup Submenu -->
+      <div class="relative">
+        <button data-tool="shape" title="Shapes (R)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+          <i data-lucide="shapes" class="w-5 h-5"></i>
+        </button>
+        <div id="shapes-menu" class="toolbar-submenu hidden absolute left-full ml-3 top-0 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl toolbar-shadow grid grid-cols-2 gap-2 w-36 z-30">
+          <button data-shape-type="rectangle" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="square" class="w-4 h-4 mb-1"></i> Rect
+          </button>
+          <button data-shape-type="circle" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="circle" class="w-4 h-4 mb-1"></i> Circle
+          </button>
+          <button data-shape-type="diamond" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="diamond" class="w-4 h-4 mb-1"></i> Diamond
+          </button>
+          <button data-shape-type="triangle" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="triangle" class="w-4 h-4 mb-1"></i> Triangle
+          </button>
+          <button data-shape-type="cylinder" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="database" class="w-4 h-4 mb-1"></i> Database
+          </button>
+          <button data-shape-type="cloud" class="p-2 text-xs flex flex-col items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="cloud" class="w-4 h-4 mb-1"></i> Cloud
+          </button>
+        </div>
+      </div>
+
+      <button data-tool="text" title="Text (T)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <i data-lucide="type" class="w-5 h-5"></i>
+      </button>
+
+      <button data-tool="connector" title="Smart Arrow / Connector (C)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+      </button>
+
+      <div class="h-px w-6 bg-slate-200 dark:bg-slate-700 my-1 self-center"></div>
+
+      <button data-tool="pen" title="Pen (P)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <i data-lucide="pen-tool" class="w-5 h-5"></i>
+      </button>
+
+      <button data-tool="highlighter" title="Highlighter" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <i data-lucide="highlighter" class="w-5 h-5"></i>
+      </button>
+
+      <button data-tool="eraser" title="Eraser" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <i data-lucide="eraser" class="w-5 h-5"></i>
+      </button>
+
+      <div class="h-px w-6 bg-slate-200 dark:bg-slate-700 my-1 self-center"></div>
+
+      <button data-tool="frame" title="Frame Container (F)" class="p-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
+        <i data-lucide="frame" class="w-5 h-5"></i>
+      </button>
+    </aside>
+
+    <!-- Floating Contextual Action Toolbar (anchored above selection) -->
+    <div id="context-toolbar" class="hidden fixed z-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl toolbar-shadow p-1.5 flex items-center gap-1.5 select-none transition-all">
+      <!-- Quick Palette Swatches -->
+      <div class="flex items-center gap-1 pr-2 border-r border-slate-200 dark:border-slate-700">
+        <button data-color="#FEF08A" class="w-5 h-5 rounded-full bg-[#FEF08A] border border-black/10 hover:scale-110 transition-transform"></button>
+        <button data-color="#BAE6FD" class="w-5 h-5 rounded-full bg-[#BAE6FD] border border-black/10 hover:scale-110 transition-transform"></button>
+        <button data-color="#BBF7D0" class="w-5 h-5 rounded-full bg-[#BBF7D0] border border-black/10 hover:scale-110 transition-transform"></button>
+        <button data-color="#FBCFE8" class="w-5 h-5 rounded-full bg-[#FBCFE8] border border-black/10 hover:scale-110 transition-transform"></button>
+        <button data-color="#FFFFFF" class="w-5 h-5 rounded-full bg-[#FFFFFF] border border-slate-300 hover:scale-110 transition-transform"></button>
+      </div>
+
+      <!-- Layering -->
+      <button id="ctx-bring-front" title="Bring to Front" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+        <i data-lucide="bring-to-front" class="w-4 h-4"></i>
+      </button>
+      <button id="ctx-send-back" title="Send to Back" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+        <i data-lucide="send-to-back" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Duplicate & Delete -->
+      <button id="ctx-duplicate" title="Duplicate (Ctrl+D)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+        <i data-lucide="copy" class="w-4 h-4"></i>
+      </button>
+      <button id="ctx-delete" title="Delete (Del)" class="p-1.5 rounded hover:bg-rose-50 text-rose-600">
+        <i data-lucide="trash-2" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Bottom-Right Controls (Zoom & Minimap) -->
+    <div class="absolute right-4 bottom-4 z-20 flex flex-col items-end gap-2 select-none">
+      <!-- Minimap Container -->
+      <div id="minimap-container" class="hidden bg-white/95 dark:bg-slate-800/95 border border-slate-200 dark:border-slate-700 rounded-xl toolbar-shadow p-2 backdrop-blur">
+        <canvas id="minimap-canvas" width="180" height="120" class="rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 cursor-crosshair"></canvas>
+      </div>
+
+      <!-- Floating Zoom Dock -->
+      <div class="flex items-center gap-1 bg-white/95 dark:bg-slate-800/95 border border-slate-200 dark:border-slate-700 rounded-xl toolbar-shadow p-1 backdrop-blur">
+        <button id="zoom-out-btn" title="Zoom Out" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+          <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+        </button>
+
+        <button id="zoom-reset-btn" title="Reset Zoom to 100%" class="text-xs font-semibold px-1.5 py-1 text-slate-700 dark:text-slate-200 w-12 text-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
+          <span id="zoom-percentage">100%</span>
+        </button>
+
+        <button id="zoom-in-btn" title="Zoom In" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        </button>
+
+        <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+        <button id="zoom-fit-btn" title="Zoom to Fit (0)" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+          <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
+        </button>
+
+        <button id="toggle-minimap-btn" title="Toggle Minimap" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+          <i data-lucide="map" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WebMCP Agent Simulator & Live Console Drawer -->
+  <aside id="webmcp-drawer" class="fixed right-0 top-14 bottom-0 w-96 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 toolbar-shadow z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md bg-emerald-500 text-white flex items-center justify-center">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+        </div>
+        <h2 class="font-semibold text-sm">WebMCP AI Agent Console</h2>
+      </div>
+      <button id="close-webmcp-drawer" class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div class="p-4 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4">
+      <!-- Quick AI Prompts -->
+      <div>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Simulate Agent Commands</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <button data-agent-prompt="kanban" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
+            📋 Generate Kanban Board
+          </button>
+          <button data-agent-prompt="architecture" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
+            ☁️ Cloud Architecture
+          </button>
+          <button data-agent-prompt="mindmap" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
+            🧠 Agent Swarm Mindmap
+          </button>
+          <button data-agent-prompt="sticky_trio" class="p-2 text-xs font-medium bg-slate-50 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 rounded-lg text-left transition-colors">
+            💡 3 Strategy Stickies
+          </button>
+        </div>
+      </div>
+
+      <!-- Tool Execution Form -->
+      <div class="flex flex-col gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Direct Tool Runner</h3>
+        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Select Tool:</label>
+        <select id="webmcp-tool-select" class="text-xs p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-blue-500"></select>
+
+        <label class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2">Input Arguments (JSON):</label>
+        <textarea id="webmcp-tool-input" rows="4" class="text-xs font-mono p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-blue-500"></textarea>
+
+        <button id="webmcp-run-tool-btn" class="mt-2 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-lg shadow transition-colors flex items-center justify-center gap-1.5">
+          <i data-lucide="play" class="w-3.5 h-3.5"></i>
+          Execute WebMCP Tool
+        </button>
+
+        <label class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2">Output Response:</label>
+        <pre id="webmcp-tool-result" class="p-3 bg-slate-900 text-slate-400 font-mono text-xs rounded overflow-x-auto min-h-[70px]">Awaiting invocation...</pre>
+      </div>
+
+      <!-- Registered Tools Catalog -->
+      <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Registered Tools Catalog</h3>
+        <div id="webmcp-tools-list" class="flex flex-col gap-2"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Templates Modal -->
+  <div id="templates-modal" class="modal-container hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700">
+        <h3 class="text-base font-semibold">Choose a Miro Whiteboard Template</h3>
+        <button data-close-modal class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div data-template="kanban" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 cursor-pointer transition-all">
+          <div class="font-semibold text-sm mb-1">📋 Kanban Board</div>
+          <p class="text-xs text-slate-500">To Do, In Progress, Done columns with pastel sticky notes.</p>
+        </div>
+        <div data-template="flowchart" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 cursor-pointer transition-all">
+          <div class="font-semibold text-sm mb-1">🔀 Flowchart</div>
+          <p class="text-xs text-slate-500">Process flow with decision diamond and orthogonal arrows.</p>
+        </div>
+        <div data-template="mindmap" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 cursor-pointer transition-all">
+          <div class="font-semibold text-sm mb-1">🧠 Mind Map</div>
+          <p class="text-xs text-slate-500">Radial concept tree with curved dynamic connectors.</p>
+        </div>
+        <div data-template="architecture" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 cursor-pointer transition-all">
+          <div class="font-semibold text-sm mb-1">☁️ System Architecture</div>
+          <p class="text-xs text-slate-500">Client, FastWebMCP gateway, canvas engine, and storage DB.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="export-modal" class="modal-container hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700">
+        <h3 class="text-base font-semibold">Export or Import Board</h3>
+        <button data-close-modal class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3 mt-4">
+        <button id="export-png-btn" class="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center justify-between">
+          <div>
+            <div class="font-semibold text-sm">Download PNG Image</div>
+            <div class="text-xs text-slate-500">High resolution image of all board elements.</div>
+          </div>
+          <i data-lucide="image" class="w-5 h-5 text-slate-400"></i>
+        </button>
+
+        <button id="export-svg-btn" class="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center justify-between">
+          <div>
+            <div class="font-semibold text-sm">Download SVG Vector</div>
+            <div class="text-xs text-slate-500">Scalable vector graphics format.</div>
+          </div>
+          <i data-lucide="file-code" class="w-5 h-5 text-slate-400"></i>
+        </button>
+
+        <button id="export-json-btn" class="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center justify-between">
+          <div>
+            <div class="font-semibold text-sm">Export Board JSON</div>
+            <div class="text-xs text-slate-500">Full backup for migration or agent state.</div>
+          </div>
+          <i data-lucide="file-json" class="w-5 h-5 text-slate-400"></i>
+        </button>
+
+        <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
+          <label class="block font-semibold text-xs text-slate-700 dark:text-slate-300 mb-1">Import from JSON:</label>
+          <input id="import-json-input" type="file" accept=".json" class="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Initialization (ES Module) -->
+  <script type="module">
+    import { BoardStore } from './src/board-store.js';
+    import { CanvasEngine } from './src/canvas-engine.js';
+    import { registerBoardWebMcpTools } from './src/webmcp-board-tools.js';
+    import { UIController } from './src/ui-controller.js';
+
+    // 1. Initialize Board Store
+    const store = new BoardStore({
+      boardId: 'main-board',
+      boardTitle: 'Miro KDD Whiteboard'
+    });
+
+    // 2. Initialize Canvas Engine
+    const canvas = document.getElementById('whiteboard-canvas');
+    const engine = new CanvasEngine(canvas, store);
+
+    // 3. Register Whiteboard WebMCP Tools
+    registerBoardWebMcpTools(store);
+
+    // 4. Initialize UI Controller
+    const ui = new UIController(engine, store);
+
+    // Populate initial starter canvas if empty
+    if (store.elements.size === 0) {
+      store.addElement({
+        type: 'frame',
+        title: 'Welcome to Miro KDD Whiteboard',
+        x: 100,
+        y: 80,
+        width: 680,
+        height: 380
+      }, false);
+
+      store.addElement({
+        type: 'sticky',
+        text: '🚀 100% Client-Side Miro Clone\n\nDeployable straight to GitHub Pages with zero server setup.',
+        color: '#FEF08A',
+        x: 130,
+        y: 130,
+        width: 190,
+        height: 160
+      }, false);
+
+      store.addElement({
+        type: 'sticky',
+        text: '🧠 KDD Methodology\n\nEquipped with OKF Knowledge Base & CCDD Task Contracts.',
+        color: '#BAE6FD',
+        x: 350,
+        y: 130,
+        width: 190,
+        height: 160
+      }, false);
+
+      store.addElement({
+        type: 'sticky',
+        text: '🤖 FastWebMCP & WebMCP\n\nAgents can inspect & draw shapes via document.modelContext.',
+        color: '#BBF7D0',
+        x: 570,
+        y: 130,
+        width: 180,
+        height: 160
+      }, false);
+
+      const shape1 = store.addElement({
+        type: 'shape',
+        shapeType: 'rounded-rectangle',
+        text: 'Human User (UI / HTMX)',
+        x: 180,
+        y: 330,
+        width: 170,
+        height: 70,
+        fillColor: '#FFFFFF'
+      }, false);
+
+      const shape2 = store.addElement({
+        type: 'shape',
+        shapeType: 'circle',
+        text: 'AI Agent (WebMCP)',
+        x: 480,
+        y: 330,
+        width: 140,
+        height: 70,
+        fillColor: '#E0E7FF',
+        strokeColor: '#4338CA'
+      }, false);
+
+      store.addElement({
+        type: 'connector',
+        fromId: shape1.id,
+        toId: shape2.id,
+        label: 'Real-time Pair Work',
+        style: 'curved'
+      }, false);
+
+      store.zoomToFit(canvas.clientWidth, canvas.clientHeight);
+    }
+
+    // Check for template query parameter (?template=kanban|flowchart|mindmap|architecture)
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedTemplate = urlParams.get('template');
+    if (requestedTemplate && ['kanban', 'flowchart', 'mindmap', 'architecture'].includes(requestedTemplate)) {
+      store.clearBoard();
+      const reg = window.__WEBMCP_REGISTRY__;
+      if (reg && reg.has('whiteboard_generate_diagram')) {
+        reg.get('whiteboard_generate_diagram').execute({ diagramType: requestedTemplate });
+      }
+    }
+
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Bind board title input to store
+    const titleInput = document.getElementById('board-title-input');
+    if (titleInput) {
+      titleInput.value = store.boardTitle;
+      titleInput.addEventListener('input', () => {
+        store.boardTitle = titleInput.value;
+        store.scheduleSave();
+      });
+    }
+
+    // Expose globals for debugging and automated tests
+    window.__WHITEBOARD__ = { store, engine, ui };
+  </script>
+</body>
+</html>

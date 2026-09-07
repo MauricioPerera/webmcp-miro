@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import sys
+
+HTML_CONTENT = r'''<!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
@@ -799,3 +801,8 @@
   </script>
 </body>
 </html>
+'''
+
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write(HTML_CONTENT)
+print("index.html successfully generated!")
